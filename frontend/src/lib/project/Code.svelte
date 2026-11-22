@@ -113,7 +113,7 @@
     <section id="code-hotspots" tabindex="-1" class="card block">
       <h2>{t('code.hotspots')} ({hotspots.length})</h2>
       <p class="muted hint">{t('code.hotspotsHint', { n: d.functions ?? 0, avg: (d.avg_complexity ?? 0).toFixed(1) })}</p>
-      <Hotspots list={hotspots} files={d.hot_files ?? []} />
+      <Hotspots list={hotspots} files={d.hot_files ?? []} {projectId} />
     </section>
 
     <section class="card block">

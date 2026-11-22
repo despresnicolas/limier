@@ -105,13 +105,15 @@
 </dialog>
 
 {#snippet row(d: LocalDir, label?: string)}
-  <div class="row">
-    <input type="checkbox" checked={selected.has(d.path)} disabled={!d.node || d.registered}
-      onchange={(e) => toggle(d, e.currentTarget.checked)} aria-label={t('add.analyseFolder', { p: d.path })}
-      title={d.registered ? t('add.registered') : d.node ? t('add.analyseThis') : t('add.noPkg')} />
+  {@const title = d.registered ? t('add.registered') : d.node ? t('add.analyseThis') : t('add.noPkg')}
+  <div class="row" class:on={selected.has(d.path)}>
     {#if label}
-      <strong class="name">{label}</strong>
+      <!-- The open folder: one click selects it, no checkbox. -->
+      <button class="ghost name" aria-pressed={selected.has(d.path)} disabled={!d.node || d.registered} {title}
+        onclick={() => toggle(d, !selected.has(d.path))}><strong>{selected.has(d.path) ? '✓ ' : ''}{label}</strong></button>
     {:else}
+      <input type="checkbox" checked={selected.has(d.path)} disabled={!d.node || d.registered}
+        onchange={(e) => toggle(d, e.currentTarget.checked)} aria-label={t('add.analyseFolder', { p: d.path })} {title} />
       <button class="ghost name" onclick={() => go(d.path)}>{d.name}</button>
     {/if}
     {#if d.node}<span class="pill">Node.js</span>{/if}
@@ -129,7 +131,8 @@
   .row { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-bottom: 1px solid var(--border); }
   .row:last-child { border-bottom: 0; }
   .row:hover { background: var(--surface-2); }
-  .row input { width: auto; }
+  .row input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+  .row.on { background: var(--accent-soft); }
   .name { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 4px; border: 0; }
   .empty { padding: 12px; text-align: center; }
 </style>

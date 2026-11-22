@@ -119,3 +119,7 @@ build/darwin/release.sh 0.2.0 "Ce qui change, en une ou deux phrases."
 ```
 
 Le script augmente la version dans `build/darwin/Info.plist`, construit le DMG et le zip de mise à jour, signe le zip, puis publie une release GitHub avec `update.json`. La clé de signature reste dans `~/.config/limier/update-signing.key` et n'est jamais commitée.
+
+## Licence
+
+[GPL-3.0](LICENSE)

@@ -36,6 +36,13 @@
     const f = { ...filters, limit: LIMIT, offset };
     return projectId === undefined ? api.findings(f) : api.projectFindings(projectId, f);
   });
+  // All projects: group the page by project, in priority order of each project's first finding.
+  // shortcut: groups only the current page (50 rows), a project can span two pages.
+  const groups = $derived.by(() => {
+    const m = new Map<number, NonNullable<typeof q.data>['items']>();
+    for (const f of q.data?.items ?? []) m.set(f.project_id, [...(m.get(f.project_id) ?? []), f]);
+    return [...m.values()];
+  });
 
   function update(patch: Record<string, string | undefined>, keepOffset = false) {
     const p = new URLSearchParams(sp);
@@ -109,6 +116,8 @@
           update({ min_priority: e.currentTarget.value === '' || !Number.isFinite(n) ? undefined : String(Math.min(100, Math.max(0, n))) });
         }} />
     </label>
+  </div>
+  <div class="checks">
     <label class="check">
       <input type="checkbox" checked={sp.get('kev') === 'true'} onchange={(e) => update({ kev: e.currentTarget.checked ? 'true' : undefined })} />
       {t('findings.kevOnly')}
@@ -137,18 +146,20 @@
 {:else if q.data.items.length === 0}
   <p class="card muted">{t('findings.none')}</p>
 {:else}
-  <div class="scroll-x">
+  <div class="scroll-x fit">
     <table>
       <thead>
         <tr>
-          <th>{t('findings.priority')}</th><th>{t('findings.vuln')}</th><th>{t('findings.severity')}</th><th>{t('findings.package')}</th>
-          <th>{t('findings.fixedIn')}</th><th>{t('findings.type')}</th><th class="num">EPSS</th><th>{t('findings.status')}</th>
-          {#if projectId === undefined}<th>{t('findings.project')}</th>{/if}
-          <th><span class="sr-only">{t('findings.actions')}</span></th>
+          <th class="num">{t('findings.priority')}</th><th>{t('findings.vuln')}</th><th>{t('findings.severity')}</th><th>{t('findings.package')}</th>
+          <th>{t('findings.type')}</th><th class="num">EPSS</th><th>{t('findings.status')}</th>
         </tr>
       </thead>
+      {#each groups as items (items[0].project_id)}
       <tbody>
-        {#each q.data.items as f (f.id)}
+        {#if projectId === undefined}
+          <tr class="group"><th colspan="7"><a href="#/projects/{items[0].project_id}">{items[0].project_path}</a> <span class="muted">{items.length}</span></th></tr>
+        {/if}
+        {#each items as f (f.id)}
           <tr>
             <td class="num">{f.priority.toFixed(1)}</td>
             <td class="vuln">
@@ -160,39 +171,44 @@
               {#if f.summary}<div class="muted sum" title={f.summary}>{f.summary}</div>{/if}
             </td>
             <td><Sev severity={f.severity} /></td>
-            <td><code>{f.package_name}@{f.package_version}</code></td>
-            <td>{#if f.fixed_version}<code>{f.fixed_version}</code>{:else}<span class="muted">—</span>{/if}</td>
+            <td class="pkg">
+              <code>{f.package_name}<wbr />@{f.package_version}</code>
+              {#if f.fixed_version}<div class="muted small">{t('findings.fixedIn')} <code>{f.fixed_version}</code></div>{/if}
+            </td>
             <td><DepType direct={f.direct} via={f.via} path={f.dependency_path} /></td>
-            <td class="num">{fmtPercent(f.epss_score)}</td>
-            <td>{t(`status.${f.status}One`)}</td>
-            {#if projectId === undefined}<td><a href="#/projects/{f.project_id}">{f.project_path}</a></td>{/if}
-            <td class="act">
-              {#if f.status === 'open'}
-                <a href="#/projects/{f.project_id}?tab=fixes">{t('findings.fixes')}</a>
-              {/if}
+            <td class="num nowrap">{fmtPercent(f.epss_score)}</td>
+            <td class="nowrap">
+              {t(`status.${f.status}One`)}
+              {#if f.status === 'open'}<div class="small"><a href="#/projects/{f.project_id}?tab=fixes">{t('findings.fixes')}</a></div>{/if}
             </td>
           </tr>
         {/each}
       </tbody>
+      {/each}
     </table>
   </div>
   <Pager total={q.data.total} limit={LIMIT} {offset} onchange={(o) => update({ offset: o ? String(o) : undefined }, true)} />
 {/if}
 
 <style>
+  .nowrap { white-space: nowrap; }
   .filters { display: grid; gap: 12px; margin-bottom: 12px; }
   .sev { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   .sev button { padding: 2px 10px; border-radius: 99px; font-size: 12px; }
   .sev button.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
   .lbl { font-size: 12px; color: var(--muted); margin-right: 4px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; align-items: end; }
-  .check { display: flex; align-items: center; gap: 6px; padding-bottom: 6px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 6px 20px; }
+  .check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); }
   .check input { width: auto; }
   .reset { justify-self: start; padding: 2px 6px; font-size: 12px; }
   .bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-  .vuln { max-width: 320px; }
-  .sum { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* No horizontal scroll: cells wrap at sensible points instead. */
+  .fit { overflow-x: visible; }
+  .sum { font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .pkg code, .small code { overflow-wrap: normal; }
+  .small { font-size: 12px; margin-top: 2px; }
   .kev { color: var(--err); }
   .new { color: var(--accent); border-color: var(--accent); }
-  .act { white-space: nowrap; text-align: right; }
+  .group th { background: var(--surface-2); color: var(--text); font-size: 13px; }
 </style>

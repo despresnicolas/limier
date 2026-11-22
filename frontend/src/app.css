@@ -89,10 +89,11 @@ dialog {
   box-shadow: 0 6px 24px rgb(0 0 0 / 0.18);
 }
 dialog::backdrop { background: rgb(0 0 0 / 0.3); }
-dialog > header, dialog > footer { padding: 12px 20px; }
-dialog > header { border-bottom: 1px solid var(--border); }
-dialog > footer { border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
-dialog > footer button { min-width: 110px; }
+/* Also match header/footer inside a <form> wrapping the dialog content. */
+:is(dialog, dialog > form) > :is(header, footer) { padding: 12px 20px; }
+:is(dialog, dialog > form) > header { border-bottom: 1px solid var(--border); }
+:is(dialog, dialog > form) > footer { border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+:is(dialog, dialog > form) > footer button { min-width: 110px; }
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }

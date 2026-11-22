@@ -185,7 +185,7 @@
         {#if hotspots.length}
           <h3>{t('code.hotspots')} ({hotspots.length})</h3>
           <p class="muted hint">{t('code.hotspotsHint', { n: cd.functions ?? 0, avg: (cd.avg_complexity ?? 0).toFixed(1) })}</p>
-          <Hotspots list={hotspots} />
+          <Hotspots list={hotspots} {projectId} />
         {/if}
         {#if codeLists[2].items.length}
           <h3>{t('code.quickWins')} ({codeLists[2].items.length})</h3>

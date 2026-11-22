@@ -5,7 +5,7 @@
   import { route } from '$lib/route.svelte';
   import { goto } from '$app/navigation';
   import { api, ApiError } from '$lib/api';
-  import { i18n, t, stored, store, type Key } from '$lib/i18n.svelte';
+  import { i18n, t, type Key } from '$lib/i18n.svelte';
   import { editor } from '$lib/editor.svelte';
   import EditorPicker from '$lib/components/EditorPicker.svelte';
   import UpdateBanner from '$lib/components/UpdateBanner.svelte';
@@ -45,11 +45,12 @@
     document.documentElement.lang = i18n.lang;
   });
 
-  // First launch: ask once for the default editor. "Later" is fine: the first click on a file asks again.
+  // At each launch until a default editor is saved: "Later" only skips it for this session.
   let picker = $state<EditorPicker>();
+  let asked = false;
   $effect(() => {
-    if (ready && picker && !editor.id && !stored('editorAsked')) {
-      store('editorAsked', '1');
+    if (ready && picker && !editor.id && !asked) {
+      asked = true;
       picker.show();
     }
   });

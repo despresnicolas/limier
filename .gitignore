@@ -1,0 +1,44 @@
+# Single ignore file for the whole repo (root app, backend/, frontend/).
+
+# --- Private working docs (kept local, not part of the sources) ---
+/CLAUDE.md
+/.claude/
+
+# --- Build output and release artefacts ---
+# bin/ holds limier.app, limier.dmg, the updater zip and update.json: they go to GitHub Releases.
+/bin/
+/desktop
+/backend/limier
+/backend/bin/
+*.dmg
+*.app/
+*.zip
+*.test
+*.prof
+coverage.out
+
+# --- Wails / Task ---
+/.task/
+/.wails/
+/frontend/bindings/
+
+# --- Frontend (SvelteKit / Vite) ---
+node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+/frontend/.svelte-kit/
+*.log
+
+# --- Secrets and local overrides ---
+.env
+.env.*
+*.local
+*.key
+*.pem
+
+# --- Editors and OS ---
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.sw?

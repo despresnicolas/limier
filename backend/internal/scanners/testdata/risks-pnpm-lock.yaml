@@ -1,0 +1,52 @@
+lockfileVersion: '6.0'
+
+importers:
+
+  .:
+    dependencies:
+      clean:
+        specifier: ^1.0.0
+        version: 1.0.0
+      esbuild:
+        specifier: ^0.20.0
+        version: 0.20.2
+      corp:
+        specifier: ^2.0.0
+        version: 2.0.0
+      vendored:
+        specifier: file:vendor/vendored-1.0.0.tgz
+        version: file:vendor/vendored-1.0.0.tgz
+      '@acme/shared':
+        specifier: workspace:*
+        version: link:packages/shared
+
+  packages/shared: {}
+
+packages:
+
+  /clean@1.0.0:
+    resolution: {integrity: sha512-x}
+    dev: false
+
+  /esbuild@0.20.2:
+    resolution: {integrity: sha512-x}
+    requiresBuild: true
+    dependencies:
+      gitdep: github.com/acme/gitdep/0123456
+    dev: false
+
+  /corp@2.0.0:
+    resolution: {integrity: sha512-x, tarball: 'https://deploy:tok@npm.corp.example/corp/-/corp-2.0.0.tgz'}
+    dev: false
+
+  file:vendor/vendored-1.0.0.tgz:
+    resolution: {integrity: sha512-x, tarball: file:vendor/vendored-1.0.0.tgz}
+    name: vendored
+    version: 1.0.0
+    dev: false
+
+  github.com/acme/gitdep/0123456:
+    resolution: {tarball: https://codeload.github.com/acme/gitdep/tar.gz/0123456}
+    name: gitdep
+    version: 1.2.0
+    dev: false

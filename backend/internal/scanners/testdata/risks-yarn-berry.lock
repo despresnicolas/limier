@@ -1,0 +1,22 @@
+__metadata:
+  version: 8
+
+"clean@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "clean@npm:1.0.0"
+
+"gitdep@https://github.com/acme/gitdep.git":
+  version: 1.2.0
+  resolution: "gitdep@https://github.com/acme/gitdep.git#commit=0123456"
+
+"@acme/vendored@file:./vendor/v.tgz::locator=risky%40workspace%3A.":
+  version: 1.0.0
+  resolution: "@acme/vendored@file:./vendor/v.tgz#./vendor/v.tgz::hash=1&locator=risky%40workspace%3A."
+
+"risky@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "risky@workspace:."
+  dependencies:
+    "@acme/vendored": "file:./vendor/v.tgz::locator=risky%40workspace%3A."
+    clean: "npm:^1.0.0"
+    gitdep: "https://github.com/acme/gitdep.git"

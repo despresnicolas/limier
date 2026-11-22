@@ -1,0 +1,81 @@
+---
+lockfileVersion: '9.0'
+
+importers:
+
+  .:
+    packageManagerDependencies:
+      pnpm:
+        specifier: 9.0.0
+        version: 9.0.0
+
+packages:
+
+  pnpm@9.0.0:
+    resolution: {integrity: sha512-x}
+
+snapshots:
+
+  pnpm@9.0.0: {}
+
+---
+lockfileVersion: '9.0'
+
+importers:
+
+  .:
+    dependencies:
+      '@sveltejs/kit':
+        specifier: ^2.0.0
+        version: 2.5.0(svelte@5.1.0)
+      svelte:
+        specifier: ^5.0.0
+        version: 5.1.0
+      '@acme/ui':
+        specifier: workspace:*
+        version: link:packages/ui
+    devDependencies:
+      strip:
+        specifier: npm:strip-ansi@^6
+        version: strip-ansi@6.0.1
+
+  packages/ui:
+    dependencies:
+      debug:
+        specifier: ^4.3.0
+        version: 4.3.4
+
+packages:
+
+  '@sveltejs/kit@2.5.0':
+    resolution: {integrity: sha512-x}
+  svelte@5.1.0:
+    resolution: {integrity: sha512-x}
+
+snapshots:
+
+  '@sveltejs/kit@2.5.0(svelte@5.1.0)':
+    dependencies:
+      cookie: 0.6.0
+      debug: 4.3.4
+      svelte: 5.1.0
+
+  svelte@5.1.0:
+    dependencies:
+      acorn: 8.12.0
+
+  acorn@8.12.0: {}
+
+  cookie@0.6.0: {}
+
+  debug@4.3.4:
+    dependencies:
+      ms: 2.1.2
+
+  ms@2.1.2: {}
+
+  strip-ansi@6.0.1:
+    dependencies:
+      ansi-regex: 5.0.1
+
+  ansi-regex@5.0.1: {}

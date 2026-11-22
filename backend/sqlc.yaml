@@ -1,0 +1,53 @@
+version: "2"
+# SQLite pitfalls of sqlc v1.31.1: in one query use only `?` or only named parameters (@x, sqlc.arg,
+# sqlc.narg): mixing them breaks the ?N numbering. Named parameters are left unbound in ORDER BY and on
+# the left of `IN (SELECT …)`: bring them in through a joined one-row subquery or an EXISTS.
+# CAST(sqlc.narg(x) AS type) gives a nullable parameter its Go type.
+sql:
+  - engine: sqlite
+    schema: internal/db/migrations
+    queries: internal/db/queries
+    gen:
+      go:
+        package: dbq
+        out: internal/db/dbq
+        emit_json_tags: true
+        json_tags_case_style: snake
+        emit_empty_slices: true
+        emit_pointers_for_null_types: true
+        # Columns match the declared type in upper case, CAST(… AS type) in lower case: list both.
+        overrides:
+          - db_type: TEXT_LIST
+            go_type: { import: "limier/internal/db/sqltypes", type: "Strings" }
+          - db_type: TEXT_LIST
+            nullable: true
+            go_type: { import: "limier/internal/db/sqltypes", type: "Strings" }
+          - db_type: text_list
+            go_type: { import: "limier/internal/db/sqltypes", type: "Strings" }
+          - db_type: text_list
+            nullable: true
+            go_type: { import: "limier/internal/db/sqltypes", type: "Strings" }
+          - db_type: JSON_TEXT
+            go_type: { import: "limier/internal/db/sqltypes", type: "JSON" }
+          - db_type: INT
+            go_type: int32
+          - db_type: INT
+            nullable: true
+            go_type: { type: int32, pointer: true }
+          - db_type: int
+            go_type: int32
+          - db_type: int
+            nullable: true
+            go_type: { type: int32, pointer: true }
+          - db_type: TIMESTAMP
+            go_type: time.Time
+          - db_type: TIMESTAMP
+            nullable: true
+            go_type: { type: time.Time, pointer: true }
+          - db_type: DATE
+            go_type: time.Time
+          - db_type: DATE
+            nullable: true
+            go_type: { type: time.Time, pointer: true }
+          - column: sbom_blobs.content
+            go_struct_tag: json:"-"

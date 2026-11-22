@@ -1,0 +1,15 @@
+{
+  "name": "web",
+  "version": "1.4.0",
+  "private": true,
+  "packageManager": "pnpm@9.12.1",
+  "workspaces": {"packages": ["packages/*", "apps/*"], "nohoist": ["**/react-native"]},
+  "dependencies": {"express": "^4.18.2", "@nestjs/core": "^10.3.0"},
+  "devDependencies": {"jest": "^29.7.0", "typescript": "~5.4.0", "express": "^4.18.2"},
+  "optionalDependencies": {"fsevents": "^2.3.3"},
+  "peerDependencies": {"rxjs": "^7.8.0"},
+  "overrides": {"semver": "^7.5.2", "foo": {"bar": "1.0.0"}},
+  "pnpm": {"overrides": {"ws@<8.17.1": ">=8.17.1"}},
+  "resolutions": {"**/minimist": "1.2.8"},
+  "engines": {"node": ">=20"}
+}

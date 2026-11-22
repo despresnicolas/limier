@@ -1,0 +1,27 @@
+lockfileVersion: '9.0'
+
+importers:
+
+  .:
+    dependencies:
+      gitdep:
+        specifier: git+ssh://git@github.com/acme/gitdep.git
+        version: git+ssh://git@github.com/acme/gitdep.git#0123456
+      local:
+        specifier: file:../local
+        version: file:../local
+
+packages:
+
+  gitdep@git+ssh://git@github.com/acme/gitdep.git#0123456:
+    resolution: {commit: 0123456, repo: 'git+ssh://git@github.com/acme/gitdep.git', type: git}
+    version: 1.2.0
+
+  local@file:../local:
+    resolution: {directory: ../local, type: directory}
+
+snapshots:
+
+  gitdep@git+ssh://git@github.com/acme/gitdep.git#0123456: {}
+
+  local@file:../local: {}

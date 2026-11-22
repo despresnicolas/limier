@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=My Product
+Comment=A limier application
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/limier %u
+Terminal=false
+Type=Application
+Icon=limier
+Categories=Utility;
+StartupWMClass=limier
+
+ 

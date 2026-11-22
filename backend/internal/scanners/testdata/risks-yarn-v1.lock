@@ -1,0 +1,14 @@
+# yarn lockfile v1
+
+
+clean@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/clean/-/clean-1.0.0.tgz#abc"
+
+gitdep@github:acme/gitdep:
+  version "1.2.0"
+  resolved "https://codeload.github.com/acme/gitdep/tar.gz/0123456"
+
+corp@^2.0.0:
+  version "2.0.0"
+  resolved "https://npm.corp.example/corp/-/corp-2.0.0.tgz#abc"

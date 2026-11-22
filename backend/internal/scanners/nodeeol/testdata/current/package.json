@@ -1,0 +1,4 @@
+{
+  "name": "current",
+  "engines": { "node": ">=24" }
+}

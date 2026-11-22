@@ -1,0 +1,1 @@
+{ "name": "@acme/utils", "main": "dist/index.js", "dependencies": { "chalk": "^5.0.0", "unused-lib": "^1.0.0" } }

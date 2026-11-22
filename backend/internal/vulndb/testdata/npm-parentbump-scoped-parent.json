@@ -1,0 +1,9 @@
+{
+  "name": "@sc/parent",
+  "dist-tags": {"latest": "1.2.0"},
+  "versions": {
+    "1.0.0": {"name": "@sc/parent", "version": "1.0.0", "dependencies": {"@sc/child": "~1.0.0"}},
+    "1.1.0": {"name": "@sc/parent", "version": "1.1.0", "dependencies": {"@sc/child": "latest"}},
+    "1.2.0": {"name": "@sc/parent", "version": "1.2.0", "optionalDependencies": {"@sc/child": "1.5.0 - 2"}, "peerDependencies": {"@sc/child": "*"}}
+  }
+}

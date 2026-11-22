@@ -1,0 +1,1 @@
+{ "name": "@acme/app", "main": "src/main.ts", "dependencies": { "@acme/utils": "workspace:*", "chalk": "^5.0.0" } }

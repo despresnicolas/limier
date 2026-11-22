@@ -5,8 +5,8 @@
 <h1 align="center">Limier</h1>
 
 <p align="center">
-  <strong>Un tableau de bord local pour la santé et la sécurité de vos projets Node.js.</strong><br>
-  Vulnérabilités, dépendances en retard, qualité du code et correctifs sûrs en branches git, le tout sur votre machine.
+  <strong>Le détective de vos projets Node.js.</strong><br>
+  Failles, paquets malveillants, dépendances en retard et qualité du code, sur un seul écran et sans quitter votre Mac.
 </p>
 
 <p align="center">
@@ -21,105 +21,113 @@
 
 ## Pourquoi Limier
 
-Vous avez des dizaines de projets Node.js dans vos dossiers. Lesquels embarquent une CVE connue, un paquet malveillant ou une dépendance en retard de trois versions majeures ? Limier répond sur un seul écran, sans serveur, sans compte et sans pipeline CI.
+Vous avez des dizaines de projets Node.js dans vos dossiers. Lesquels embarquent une faille connue, un paquet malveillant, ou une dépendance en retard de trois versions majeures ? Limier vous répond en quelques secondes.
 
-- **Local d'abord.** Une application de bureau, un fichier SQLite. Votre code ne quitte jamais votre machine.
-- **Analyse en lecture seule.** Les scans sont écrits en Go. Limier n'exécute jamais `npm`, `node`, ni les scripts ou les hooks du projet analysé.
-- **Vous gardez la main.** Un correctif est une nouvelle branche git. Votre working tree et votre branche courante ne changent jamais.
-
-## Fonctionnalités
-
-**Sécurité des dépendances**
-- Lit `package-lock.json`, `pnpm-lock.yaml` et `yarn.lock` (v1 et berry), workspaces de monorepo compris.
-- Compare chaque paquet à [OSV.dev](https://osv.dev), avec en plus CVSS, [EPSS](https://www.first.org/epss/) et [CISA KEV](https://www.cisa.gov/known-exploited-vulnerabilities-catalog).
-- Signale les paquets malveillants (avis OpenSSF `MAL-`) et les noms proches de paquets connus (typosquatting).
-- Calcule un score de priorité par vulnérabilité, avec l'atteignabilité : le paquet est-il vraiment importé ?
-- Surveille en arrière-plan toutes les 6 h et envoie une notification système quand une nouvelle faille apparaît.
-- Produit un SBOM CycloneDX par scan et un export CSV.
-
-**Analyse du code**
-- Lignes de code par langage, graphe d'imports, fichiers et dépendances inutilisés.
-- Secrets en dur et motifs à risque (`eval`, injection de commande ou SQL, XSS, TLS désactivé).
-- Complexité cyclomatique, fonctions longues, imbrication profonde, code dupliqué.
-- Couverture de tests lue dans les rapports existants. Limier ne lance jamais vos tests.
-- Notes à la SonarQube et historique de chaque scan.
-- Exclusions dans le code : `// limier-ignore <règle> -- raison`.
-
-**Correctifs**
-- Propose des montées de version pour les dépendances directes et des overrides pour les transitives vulnérables, avec une estimation de l'effort.
-- Un clic crée la branche `fix/bump-<paquet>-<version>` depuis `HEAD` dans votre dépôt. Relisez-la et mergez-la vous-même :
-
-```sh
-git branch --list 'fix/*'
-git diff HEAD...fix/bump-cookie-0.7.0
-git merge fix/bump-cookie-0.7.0
-```
-
-**Vue d'ensemble**
-- Tableau de bord de tous les projets : CVE ouvertes par sévérité, KEV, paquets malveillants, tendance sur 90 jours, projets à risque.
-- « Où est ce paquet ? » : cherchez `nom`, `nom@1.2.3` ou `nom@^1.6` dans tous les projets.
-- Dérive des versions : les paquets utilisés à plusieurs versions.
-- Interface en français et en anglais.
+- **Tout reste sur votre Mac.** Pas de compte, pas de serveur, pas de CI. Votre code ne quitte jamais la machine.
+- **Lecture seule.** Limier lit vos fichiers. Il n'exécute jamais `npm`, `node`, ni les scripts de vos projets.
+- **Vous gardez la main.** Un correctif devient une branche git que vous relisez. Votre travail en cours ne bouge pas.
 
 ## Installation
 
-1. Téléchargez [`limier.dmg`](https://github.com/despresnicolas/limier/releases/latest/download/limier.dmg) et glissez **Limier** dans **Applications**.
-2. Apple n'a pas encore notarié l'application. Au premier lancement, faites un clic droit sur **Limier → Ouvrir**, ou lancez :
+1. Téléchargez [`limier.dmg`](https://github.com/despresnicolas/limier/releases/latest/download/limier.dmg).
+2. Ouvrez le fichier et glissez **Limier** dans **Applications**.
+3. Apple n'a pas encore notarié l'application. Au premier lancement, faites un clic droit sur **Limier → Ouvrir**, puis confirmez. Vous pouvez aussi lancer :
 
    ```sh
    xattr -dr com.apple.quarantine /Applications/limier.app
    ```
 
-3. Dans **Projets → Ajouter un projet**, cochez vos dossiers Node.js et cliquez sur **Analyser**.
+**Prérequis :** macOS 12 ou plus récent, Mac Apple Silicon. Pour créer des branches de correctif, [Docker](https://www.docker.com/products/docker-desktop/) doit tourner. Les analyses n'en ont pas besoin.
 
-Prérequis : macOS 12 ou plus récent, Apple Silicon. Pour l'instant, la création des branches de correctif demande que [Docker](https://www.docker.com/products/docker-desktop/) tourne. Les scans n'en ont pas besoin.
+## Prise en main
 
-Limier se met à jour seul. Il vérifie les GitHub Releases au démarrage puis une fois par jour, et n'installe que des paquets signés avec sa clé ed25519.
+1. Ouvrez **Projets → Ajouter un projet**.
+2. Naviguez dans vos dossiers, cochez un ou plusieurs projets Node.js, puis cliquez sur **Analyser**. Un monorepo apparaît avec un sous-projet par workspace.
+3. Attendez la fin de l'enquête : quelques secondes par projet.
+4. Ouvrez le **Tableau de bord** pour voir l'état de tous vos projets.
 
-### Données et réseau
+## Ce que vous voyez
 
-- Données : `~/Library/Application Support/limier/limier.db`. **Réglages → Désinstaller** les supprime.
-- Appels réseau : OSV.dev, CISA KEV, FIRST EPSS, le registry npm, deps.dev, et les GitHub Releases pour les mises à jour. Limier n'envoie que des noms et des versions de paquets, jamais de code source.
+### Tableau de bord
+
+Le nombre de failles ouvertes par sévérité, les failles exploitées activement (CISA KEV), les paquets malveillants, la tendance sur 90 jours et les projets les plus à risque.
+
+### Vulnérabilités
+
+Les failles de tous les projets, triées par priorité. Filtrez par sévérité, priorité, statut, dépendance directe ou indirecte, KEV, paquets malveillants ou **Nouvelles uniquement**. Le bouton **Exporter en CSV** enregistre la liste.
+
+La priorité combine la gravité (CVSS), la probabilité d'exploitation (EPSS), la présence dans KEV et l'usage réel du paquet. Une faille sur un paquet que votre code n'importe pas porte la mention « non atteignable ».
+
+### Fiche d'un projet
+
+| Onglet | Contenu |
+|--------|---------|
+| **Vulnérabilités** | Les failles du projet et la version qui les corrige. |
+| **Dépendances** | Les dépendances directes en retard ou dépréciées. Chacune se déplie sur ses dépendances indirectes. |
+| **Code** | Les notes du code, les secrets en dur, les motifs à risque (`eval`, injections, XSS), la complexité, le code dupliqué, les fichiers et dépendances inutilisés, la couverture de tests. Un clic sur `fichier:ligne` ouvre votre éditeur à la bonne ligne. |
+| **Correctifs** | Les montées de version proposées. Voir plus bas. |
+| **Historique** | Chaque analyse et l'évolution des métriques. |
+| **Paramètres** | La policy du projet, le préfixe des branches, l'éditeur, la suppression de l'analyse. |
+
+### Paquets
+
+- **Où est ce paquet ?** Une faille vient de sortir sur `axios` ? Tapez `axios`, `axios@1.6.0` ou `axios@<1.7.0` : Limier liste tous les projets qui l'utilisent.
+- **Dérive des versions** : les paquets utilisés à plusieurs versions selon les projets.
+
+## Appliquer un correctif
+
+1. Ouvrez l'onglet **Correctifs** d'un projet.
+2. Lisez l'effort estimé (faible, moyen, élevé) et, au besoin, le changelog du paquet.
+3. Cliquez sur **Accepter**. Limier crée la branche `fix/bump-<paquet>-<version>` depuis `HEAD`.
+4. Pour les montées sans risque, **Regrouper les montées sans risque** les met toutes dans une seule branche.
+5. Dans votre terminal, relisez la branche, lancez l'installation et les tests, puis mergez :
+
+   ```sh
+   git switch fix/bump-cookie-0.7.0
+   npm install && npm test
+   git switch main && git merge fix/bump-cookie-0.7.0
+   ```
+
+Limier ne touche jamais votre working tree ni votre branche courante. Il n'écrase aucune branche et n'exécute aucun hook git. Le lockfile n'est pas régénéré : la commande d'installation est indiquée dans le message de commit.
+
+## Signaler un faux positif
+
+Ajoutez un commentaire `limier-ignore` avec le nom exact de la règle et une raison. Seul sur sa ligne, il vaut pour la ligne de code suivante :
+
+```js
+// limier-ignore sast.eval -- l'entrée est une constante
+eval(template);
+```
+
+Le problème disparaît de la liste. Une carte repliable de l'onglet **Code** garde la liste des exclusions. Un secret reste signalé si le commentaire ne donne pas de raison.
+
+## Réglages
+
+- **Affichage :** thème clair, sombre ou système, langue (français ou anglais), éditeur par défaut.
+- **Surveillance :** **Surveiller les nouvelles failles** revérifie vos paquets toutes les 6 h et vous envoie une notification si une faille apparaît. Limier ne relit pas vos projets pour cela.
+- **Policy globale :** âge maximal d'une dépendance et pondérations du score de priorité. Chaque projet peut avoir sa propre policy.
+- **Mises à jour :** Limier vérifie au démarrage puis toutes les 24 h. Rien ne s'installe sans votre clic, et toute mise à jour non signée par l'auteur est refusée.
+- **Désinstaller Limier… :** supprime les données de l'application.
+
+## Vos données
+
+- Les données sont dans `~/Library/Application Support/limier/limier.db`.
+- Supprimer un projet dans Limier efface son analyse, jamais votre dossier.
+- Limier contacte OSV.dev, CISA KEV, FIRST EPSS, le registry npm, deps.dev, et GitHub pour les mises à jour. Il n'envoie que des noms et des versions de paquets, jamais de code.
 
 ## Compiler depuis les sources
 
-Prérequis : Go 1.27+, Node.js 22+, [Wails 3](https://v3.wails.io) (`wails3`) et [Task](https://taskfile.dev).
+Prérequis : Go 1.27+, Node.js 22+, [Wails 3](https://v3.wails.io) et [Task](https://taskfile.dev).
 
 ```sh
-git clone https://github.com/despresnicolas/limier.git
-cd limier
-cd frontend && npm ci && cd ..
-
-wails3 dev -config ./build/config.yml   # mode dev avec rechargement à chaud
-task build                              # binaire dans bin/
-wails3 task darwin:package:dmg          # bin/limier.app et bin/limier.dmg
+git clone https://github.com/despresnicolas/limier.git && cd limier
+(cd frontend && npm ci)
+wails3 dev -config ./build/config.yml   # mode développement
+wails3 task darwin:package:dmg          # produit bin/limier.dmg
 ```
-
-Tests :
-
-```sh
-go test ./...                     # coque de l'application
-cd backend && go test ./...       # scanners, base de données, jobs
-cd frontend && npm run check      # svelte-check
-```
-
-## Architecture
-
-| Partie | Pile |
-|--------|------|
-| `./` | Coque Wails 3 : fenêtre, mises à jour, notifications système. L'API est servie dans le processus, à la webview seulement, jamais sur un port. |
-| `backend/` | Logique métier en Go : parseurs de lockfiles, scanners, moteur de correctifs, jobs [River](https://riverqueue.com), SQLite (`modernc.org/sqlite`) avec sqlc et des migrations goose. |
-| `frontend/` | SvelteKit 5, adapter statique, routage par hash. |
-| `build/` | Packaging, mise en page du DMG, signature des releases (`build/updatesign`). |
-
-## Publier une version
-
-```sh
-build/darwin/release.sh 0.2.0 "Ce qui change, en une ou deux phrases."
-```
-
-Le script augmente la version dans `build/darwin/Info.plist`, construit le DMG et le zip de mise à jour, signe le zip, puis publie une release GitHub avec `update.json`. La clé de signature reste dans `~/.config/limier/update-signing.key` et n'est jamais commitée.
 
 ## Licence
 
-[GPL-3.0](LICENSE)
+Copyright (C) 2026 Nicolas Despres
+
+Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier selon les termes de la [GNU General Public License version 3](LICENSE), publiée par la Free Software Foundation. Il est distribué sans aucune garantie.

@@ -1,27 +1,45 @@
 <script lang="ts">
   import { fmtDateTime, fmtNumber, fmtPercent } from '$lib/format';
   import CodeIssues from '$lib/components/CodeIssues.svelte';
+  import FalsePositive from '$lib/components/FalsePositive.svelte';
   import Hotspots from '$lib/components/Hotspots.svelte';
   import Grade from '$lib/components/Grade.svelte';
   import { t } from '$lib/i18n.svelte';
   import type { CodeMetrics, CoverageMetric } from '$lib/types';
 
-  let { metrics: m, projectId }: { metrics: CodeMetrics | null; projectId: number } = $props();
+  // onchange: a false positive was (un)marked and a code scan queued, so the page reloads to follow it.
+  let { metrics: m, projectId, onchange }: { metrics: CodeMetrics | null; projectId: number; onchange?: () => void } = $props();
   const d = $derived(m?.details ?? {});
-  const secrets = $derived(d.secrets ?? []);
-  const flaws = $derived(d.flaws ?? []);
+
+  // Results (un)marked since this scan stay hidden until the rescan replaces it.
+  const fpKey = (rule: string, file: string, detail = '') => `${rule}\0${file}\0${detail}`;
+  let hidden = $state<{ scan?: number; keys: string[] }>({ keys: [] });
+  const shown = (key: string) => !(hidden.scan === m?.scan_id && hidden.keys.includes(key));
+  const keep = <T extends { rule: string; file: string; detail?: string }>(list: T[] | null | undefined) => (list ?? []).filter((i) => shown(fpKey(i.rule, i.file, i.detail)));
+  function hide(key: string) {
+    if (hidden.scan !== m?.scan_id) hidden = { scan: m?.scan_id, keys: [] };
+    hidden.keys.push(key);
+    onchange?.();
+  }
+  const onfp = (i: { rule: string; file: string; detail?: string }) => hide(fpKey(i.rule, i.file, i.detail));
+
+  const secrets = $derived(keep(d.secrets));
+  const flaws = $derived(keep(d.flaws));
   const quick = $derived(new Set(d.quick_wins ?? []));
-  const smells = $derived(d.smells ?? []);
+  const smells = $derived(keep(d.smells));
   const quickWins = $derived(smells.filter((i) => quick.has(i.rule)));
   const refactor = $derived(smells.filter((i) => !quick.has(i.rule)));
   const hotspots = $derived(d.hotspots ?? []);
   const clones = $derived(d.duplication?.clones ?? []);
   const dupRatio = $derived(Math.round((d.duplication?.ratio ?? 0) * 1000) / 10);
   const cycles = $derived(d.cycles ?? []);
-  const deadFiles = $derived(d.dead_files ?? []);
-  const unusedExports = $derived(d.unused_exports ?? []);
-  const unused = $derived(d.unused_dependencies ?? []);
-  const ignored = $derived(d.ignored ?? []);
+  const deadFiles = $derived((d.dead_files ?? []).filter((f) => shown(fpKey(DEAD, f))));
+  const unusedExports = $derived(keep(d.unused_exports));
+  const unused = $derived((d.unused_dependencies ?? []).filter((n) => shown(fpKey(UNUSED_DEP, '', n))));
+  const ignored = $derived((d.ignored ?? []).filter((i) => shown('restore\0' + fpKey(i.rule, i.file, i.detail))));
+  // Backend rule ids (imports package) of the findings listed as plain strings.
+  const DEAD = 'imports.dead-file';
+  const UNUSED_DEP = 'imports.unused-dep';
   const ignoredByRule = $derived(
     Object.entries(ignored.reduce<Record<string, number>>((acc, i) => ({ ...acc, [i.rule]: (acc[i.rule] ?? 0) + 1 }), {}))
       .map(([r, n]) => `${r} ×${n}`)
@@ -101,13 +119,13 @@
     <section id="code-secrets" tabindex="-1" class="card block" class:alert={secrets.length > 0}>
       <h2>{t('code.secrets')} ({secrets.length})</h2>
       <p class="muted hint">{t('code.secretsHint')}</p>
-      <CodeIssues list={secrets} empty={t('code.noSecrets')} detailLabel={t('code.masked')} {projectId} />
+      <CodeIssues list={secrets} empty={t('code.noSecrets')} detailLabel={t('code.masked')} {projectId} {onfp} />
     </section>
 
     <section id="code-flaws" tabindex="-1" class="card block">
       <h2>{t('code.flaws')} ({flaws.length})</h2>
       <p class="muted hint">{t('code.flawsHint')}</p>
-      <CodeIssues list={flaws} empty={t('code.noFlaws')} detailLabel={t('code.detail')} {projectId} />
+      <CodeIssues list={flaws} empty={t('code.noFlaws')} detailLabel={t('code.detail')} {projectId} {onfp} />
     </section>
 
     <section id="code-hotspots" tabindex="-1" class="card block">
@@ -119,13 +137,13 @@
     <section class="card block">
       <h2>{t('code.quickWins')} ({quickWins.length})</h2>
       <p class="muted hint">{t('code.quickWinsHint')}</p>
-      <CodeIssues list={quickWins} empty={t('code.noQuickWins')} detailLabel={t('code.detail')} {projectId} />
+      <CodeIssues list={quickWins} empty={t('code.noQuickWins')} detailLabel={t('code.detail')} {projectId} {onfp} />
     </section>
 
     <section class="card block">
       <h2>{t('code.smells')} ({refactor.length})</h2>
       <p class="muted hint">{t('code.smellsHint')}</p>
-      <CodeIssues list={refactor} empty={t('code.noSmells')} detailLabel={t('code.detail')} {projectId} />
+      <CodeIssues list={refactor} empty={t('code.noSmells')} detailLabel={t('code.detail')} {projectId} {onfp} />
     </section>
 
     {#if ignored.length}
@@ -135,7 +153,13 @@
           <p class="muted hint">{t('code.ignoredHint')} {ignoredByRule}</p>
           <ul class="list">
             {#each ignored as i, k (k)}
-              <li><code>{where(i)}</code> <code>{i.rule}</code> — <span class="muted">{i.reason || t('code.ignoredNoReason')}</span></li>
+              <li>
+                <code>{i.file ? where(i) : i.detail}</code> <code>{i.rule}</code> —
+                {#if i.false_positive}
+                  <span class="muted">{t('fp.label')}</span>
+                  <FalsePositive {projectId} rule={i.rule} file={i.file} detail={i.detail} restore ondone={() => hide('restore\0' + fpKey(i.rule, i.file, i.detail))} />
+                {:else}<span class="muted">{i.reason || t('code.ignoredNoReason')}</span>{/if}
+              </li>
             {/each}
           </ul>
         </details>
@@ -209,7 +233,7 @@
     <h2>{t('code.unusedDeps')} ({unused.length})</h2>
     <p class="muted hint">{t('code.unusedDepsHint')}</p>
     {#if !unused.length}<p class="muted">{t('code.noUnusedDeps')}</p>{:else}
-      <ul class="list">{#each unused as n (n)}<li><code>{n}</code></li>{/each}</ul>
+      <ul class="list">{#each unused as n (n)}<li><code>{n}</code> <FalsePositive {projectId} rule={UNUSED_DEP} file="" detail={n} ondone={() => hide(fpKey(UNUSED_DEP, '', n))} /></li>{/each}</ul>
     {/if}
   </section>
 
@@ -218,7 +242,7 @@
       <h2>{t('code.deadFiles')} ({deadFiles.length})</h2>
       <p class="muted hint">{t('code.deadFilesHint')}</p>
       {#if !deadFiles.length}<p class="muted">{t('code.noDeadFiles')}</p>{:else}
-        <ul class="list">{#each deadFiles as f (f)}<li><code>{f}</code></li>{/each}</ul>
+        <ul class="list">{#each deadFiles as f (f)}<li><code>{f}</code> <FalsePositive {projectId} rule={DEAD} file={f} ondone={() => hide(fpKey(DEAD, f))} /></li>{/each}</ul>
       {/if}
     </section>
 
@@ -226,7 +250,7 @@
       <h2>{t('code.unusedExports')} ({unusedExports.length})</h2>
       <p class="muted hint">{t('code.unusedExportsHint')}</p>
       {#if !unusedExports.length}<p class="muted">{t('code.noUnusedExports')}</p>{:else}
-        <ul class="list">{#each unusedExports as e, k (k)}<li><code>{e.detail}</code> <span class="muted">{where(e)}</span></li>{/each}</ul>
+        <ul class="list">{#each unusedExports as e, k (k)}<li><code>{e.detail}</code> <span class="muted">{where(e)}</span> <FalsePositive {projectId} rule={e.rule} file={e.file} detail={e.detail} ondone={() => onfp(e)} /></li>{/each}</ul>
       {/if}
     </section>
   {/if}

@@ -71,6 +71,7 @@ func (s *Server) Handler() http.Handler {
 			r.Delete("/local-fixes/{fixID}", s.reopenLocalFix)
 			r.Get("/sbom", s.exportSBOM)
 			r.Post("/open-in-editor", s.openInEditor)
+			r.Put("/false-positives", s.putFalsePositive)
 		})
 
 		r.Get("/findings", s.listFindings)

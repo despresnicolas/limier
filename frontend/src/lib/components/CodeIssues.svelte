@@ -1,11 +1,12 @@
 <script lang="ts">
   import { editorFor, openInEditor } from '$lib/editor.svelte';
   import EditorPicker from '$lib/components/EditorPicker.svelte';
+  import FalsePositive from '$lib/components/FalsePositive.svelte';
   import { t, ruleTitle, ruleHelp } from '$lib/i18n.svelte';
   import type { CodeIssue, IssueSeverity } from '$lib/types';
 
-  // With projectId, file:line opens the file in the user's editor.
-  let { list, empty, detailLabel, projectId }: { list: CodeIssue[]; empty: string; detailLabel: string; projectId?: number } = $props();
+  // With projectId, file:line opens the file in the user's editor; with onfp too, each row can be marked as a false positive.
+  let { list, empty, detailLabel, projectId, onfp }: { list: CodeIssue[]; empty: string; detailLabel: string; projectId?: number; onfp?: (i: CodeIssue) => void } = $props();
   const sevClass: Record<IssueSeverity, string> = { high: 'sev-error', medium: 'sev-warning', low: 'sev-info', info: 'muted' };
   let onlyNew = $state(false);
   const hasNew = $derived(list.some((i) => i.new));
@@ -32,7 +33,7 @@
   {/if}
   <div class="scroll-x">
     <table>
-      <thead><tr><th>{t('code.severity')}</th><th>{t('code.what')}</th><th>{t('code.where')}</th><th>{detailLabel}</th></tr></thead>
+      <thead><tr><th>{t('code.severity')}</th><th>{t('code.what')}</th><th>{t('code.where')}</th><th>{detailLabel}</th>{#if projectId && onfp}<th><span class="sr-only">{t('fp.mark')}</span></th>{/if}</tr></thead>
       <tbody>
         {#each shown as i, k (k)}
           <tr>
@@ -55,6 +56,9 @@
               {:else}<code>{where(i)}</code>{/if}
             </td>
             <td class="detail">{i.detail ?? ''}</td>
+            {#if projectId && onfp}
+              <td class="act"><FalsePositive {projectId} rule={i.rule} file={i.file} detail={i.detail} ondone={() => onfp(i)} /></td>
+            {/if}
           </tr>
         {/each}
       </tbody>
@@ -67,6 +71,7 @@
 <style>
   .where { background: none; border: none; padding: 0; text-align: left; cursor: pointer; color: inherit; }
   .where:hover code { text-decoration: underline; }
+  .act { text-align: right; }
   .detail { font-size: 12px; color: var(--muted); word-break: break-word; }
   code { word-break: break-all; }
   .new { color: var(--accent); border-color: var(--accent); }

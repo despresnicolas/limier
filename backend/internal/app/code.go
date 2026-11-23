@@ -105,6 +105,11 @@ func (a *App) workScanCode(ctx context.Context, job *river.Job[ScanCodeArgs]) er
 			UnusedDependencies: withTests.UnusedDeps,
 			Coverage:           coverage.Analyze(dir, all, withTests),
 		}
+		marks, err := a.q.ListCodeFalsePositives(ctx, p.ID)
+		if err != nil {
+			return err
+		}
+		dropFalsePositives(&d, marks)
 		if p.LastCodeScanID != nil {
 			if prev, err := a.q.GetCodeMetrics(ctx, *p.LastCodeScanID); err == nil {
 				var old codeDetails

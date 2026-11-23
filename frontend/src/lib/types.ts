@@ -74,6 +74,9 @@ export interface CodeIgnored {
   file: string
   line?: number
   reason?: string
+  /** Marked as a false positive in the app (else hidden by a limier-ignore comment). */
+  detail?: string
+  false_positive?: boolean
 }
 
 export interface CodeIssue {

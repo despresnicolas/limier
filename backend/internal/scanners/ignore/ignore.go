@@ -34,6 +34,9 @@ type Ignored struct {
 	File   string `json:"file"`
 	Line   int    `json:"line,omitempty"`
 	Reason string `json:"reason,omitempty"`
+	// Set on findings the user marked as false positives in the app (rule, file and detail identify them).
+	Detail        string `json:"detail,omitempty"`
+	FalsePositive bool   `json:"false_positive,omitempty"`
 }
 
 var (

@@ -97,6 +97,7 @@ export const api = {
   decideLocalFix: (id: number, fix: { manifest_dir: string; package_name: string; to_version: string; decision: 'accept' | 'reject' }) =>
     post<LocalFix>(`/projects/${id}/local-fixes`, fix),
   groupLocalFixes: (id: number) => post<LocalFix[]>(`/projects/${id}/local-fixes/group`, {}),
+  setFalsePositive: (id: number, body: { rule: string; file: string; detail?: string; false_positive: boolean }) => put<void>(`/projects/${id}/false-positives`, body),
   reopenLocalFix: (id: number, fixId: number) => del<void>(`/projects/${id}/local-fixes/${fixId}`),
   openInEditor: (id: number, body: { editor: string; file: string; line: number }) => post<void>(`/projects/${id}/open-in-editor`, body),
   /** Quits the app, then deletes its data and moves it to the Trash (handled by the root module). */

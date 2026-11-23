@@ -15,6 +15,14 @@ type AppSetting struct {
 	WatchVulns bool `json:"watch_vulns"`
 }
 
+type CodeFalsePositive struct {
+	ProjectID int64     `json:"project_id"`
+	Rule      string    `json:"rule"`
+	File      string    `json:"file"`
+	Detail    string    `json:"detail"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type CodeGraph struct {
 	ScanID int64         `json:"scan_id"`
 	Graph  sqltypes.JSON `json:"graph"`

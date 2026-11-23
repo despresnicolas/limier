@@ -118,7 +118,7 @@
     {#key `${id}-${version}`}
       {#if tab === 'vulnerabilities'}<FindingsView projectId={d.root_project_id} />
       {:else if tab === 'dependencies'}<Dependencies projectId={id} />
-      {:else if tab === 'code'}<Code metrics={d.code_metrics} projectId={id} />
+      {:else if tab === 'code'}<Code metrics={d.code_metrics} projectId={id} onchange={q.reload} />
       {:else if tab === 'fixes'}<Fixes projectId={id} metrics={d.code_metrics} />
       {:else if tab === 'history'}<History projectId={id} />
       {:else}<Settings detail={d} />

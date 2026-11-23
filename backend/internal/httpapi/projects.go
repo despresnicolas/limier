@@ -350,3 +350,25 @@ func (s *Server) openInEditor(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// putFalsePositive marks or unmarks a code finding as a false positive; later code scans leave it out.
+func (s *Server) putFalsePositive(w http.ResponseWriter, r *http.Request) {
+	id, ok := pathID(w, r, "projectID")
+	if !ok {
+		return
+	}
+	var body struct {
+		Rule          string `json:"rule"`
+		File          string `json:"file"`
+		Detail        string `json:"detail"`
+		FalsePositive bool   `json:"false_positive"`
+	}
+	if !decode(w, r, &body) {
+		return
+	}
+	if err := s.app.SetFalsePositive(r.Context(), id, body.Rule, body.File, body.Detail, body.FalsePositive); err != nil {
+		s.fail(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}

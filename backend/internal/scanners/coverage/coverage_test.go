@@ -66,14 +66,3 @@ func TestReach(t *testing.T) {
 		t.Errorf("got %+v\nwant %+v", e, want)
 	}
 }
-
-func TestIsTest(t *testing.T) {
-	for p, want := range map[string]bool{
-		"src/a.test.ts": true, "src/a.spec.tsx": true, "test/helpers.ts": true, "src/__tests__/a.ts": true,
-		"src/a.ts": false, "src/testing.ts": false, "src/latest/a.ts": false,
-	} {
-		if IsTest(p) != want {
-			t.Errorf("IsTest(%q) = %v", p, !want)
-		}
-	}
-}

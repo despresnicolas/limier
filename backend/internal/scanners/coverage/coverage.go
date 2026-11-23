@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -297,24 +296,7 @@ func b2i(b bool) int {
 	return 0
 }
 
-var (
-	reTestBase   = regexp.MustCompile(`\.(test|spec)\.[cm]?[jt]sx?$`)
-	reNotSource  = regexp.MustCompile(`(^|/)[^/]*\.(config|stories|story)\.[^/]+$|(^|/)\.[^/]+$|\.d\.ts$`)
-	testDirNames = map[string]bool{"__tests__": true, "test": true, "tests": true, "e2e": true, "cypress": true, "playwright": true, "__mocks__": true}
-)
-
-// IsTest reports whether a path is a test file (or a helper living in a test folder).
-func IsTest(p string) bool {
-	if reTestBase.MatchString(path.Base(p)) {
-		return true
-	}
-	for _, seg := range strings.Split(path.Dir(p), "/") {
-		if testDirNames[seg] {
-			return true
-		}
-	}
-	return false
-}
+var reNotSource = regexp.MustCompile(`(^|/)[^/]*\.(config|stories|story)\.[^/]+$|(^|/)\.[^/]+$|\.d\.ts$`)
 
 // Reach counts the source files that a test imports, following runtime imports only
 // (a type-only import runs no code). Config, stories, scripts and .d.ts files are not sources.
@@ -325,7 +307,7 @@ func Reach(files []source.File, graph imports.Report) Estimate {
 	for _, f := range files {
 		switch {
 		case !f.IsCode():
-		case IsTest(f.Path):
+		case source.IsTest(f.Path):
 			tests = append(tests, f.Path)
 		case !reNotSource.MatchString(f.Path) && !strings.HasPrefix(f.Path, "scripts/") && !strings.Contains(f.Path, "/scripts/"):
 			isSource[f.Path] = true

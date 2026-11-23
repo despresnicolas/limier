@@ -73,8 +73,13 @@ func (a *App) workScanCode(ctx context.Context, job *river.Job[ScanCodeArgs]) er
 			return err
 		}
 
+		// Test files only feed the coverage estimate: every other analysis sees the shipped code.
+		all := files
+		files = slices.DeleteFunc(slices.Clone(files), func(f source.File) bool { return source.IsTest(f.Path) })
 		langs, loc := source.Count(files)
 		graph := imports.Analyze(files)
+		// A dependency imported only by tests (vitest, testing-library…) is still used.
+		withTests := imports.Analyze(all)
 		qual := quality.Analyze(files)
 		// shortcut: 2000 commits at most keeps big histories fast, raise it if 12 months need more.
 		if counts, err := churn.Count(dir, time.Now().AddDate(-1, 0, 0), 2000); err == nil {
@@ -97,8 +102,8 @@ func (a *App) workScanCode(ctx context.Context, job *river.Job[ScanCodeArgs]) er
 			Cycles:             graph.Cycles,
 			DeadFiles:          graph.DeadFiles,
 			UnusedExports:      graph.UnusedExports,
-			UnusedDependencies: graph.UnusedDeps,
-			Coverage:           coverage.Analyze(dir, files, graph),
+			UnusedDependencies: withTests.UnusedDeps,
+			Coverage:           coverage.Analyze(dir, all, withTests),
 		}
 		if p.LastCodeScanID != nil {
 			if prev, err := a.q.GetCodeMetrics(ctx, *p.LastCodeScanID); err == nil {

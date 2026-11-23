@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -102,6 +103,25 @@ func Lang(p string) string {
 		return "Key"
 	}
 	return textLangs[ext]
+}
+
+var (
+	reTestBase   = regexp.MustCompile(`\.(test|spec)\.[cm]?[jt]sx?$`)
+	testDirNames = map[string]bool{"__tests__": true, "test": true, "tests": true, "e2e": true, "cypress": true, "playwright": true, "__mocks__": true}
+)
+
+// IsTest reports whether a path is a test file (or a helper living in a test folder).
+// Test files only feed the test coverage estimate, never the other code analyses.
+func IsTest(p string) bool {
+	if reTestBase.MatchString(path.Base(p)) {
+		return true
+	}
+	for _, seg := range strings.Split(path.Dir(p), "/") {
+		if testDirNames[seg] {
+			return true
+		}
+	}
+	return false
 }
 
 // IsCodeLang reports whether Lang is analysed as JS/TS.

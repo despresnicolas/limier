@@ -11,33 +11,41 @@
 
 <section class="drift">
   <div class="head">
-    <h2>{t('drift.title')}</h2>
+    <div>
+      <h2>{t('drift.title')}</h2>
+      <p class="muted hint">{t('drift.hint')}</p>
+    </div>
     <label class="check"><input type="checkbox" bind:checked={all} /> {t('drift.indirect')}</label>
   </div>
-  <p class="muted hint">{t('drift.hint')}</p>
   <Load r={drift}>
     {#snippet children(list)}
-      {#if !list.length}<p class="muted">{t('drift.none')}</p>{:else}
+      {#if !list.length}<p class="card muted">{t('drift.none')}</p>{:else}
         <div class="scroll-x">
           <table>
             <thead><tr><th>{t('drift.package')}</th><th>{t('drift.versions')}</th><th class="num">{t('drift.spread')} <Help text={t('drift.spreadHelp')} /></th></tr></thead>
             <tbody>
               {#each list as p (p.name)}
                 <tr>
-                  <td><code>{p.name}</code><div class="muted">{p.projects} {t('drift.projects').toLowerCase()}</div></td>
+                  <td><code class="name">{p.name}</code><div class="muted sub">{t('drift.projectCount', { n: p.projects })}</div></td>
                   <td>
-                    {#each p.versions as v (v.version)}
-                      <details>
-                        <summary>
-                          <span class="pill" class:vuln={v.open_vulns > 0} class:latest={v.version === p.latest_version}
-                            title={v.open_vulns > 0 ? t('drift.vulns', { n: v.open_vulns }) : v.version === p.latest_version ? t('drift.latest') : undefined}>{v.version}</span>
-                          <span class="muted">× {v.projects.length}</span>
-                        </summary>
-                        <ul>{#each v.projects as pr (pr.id)}<li><a href="#/projects/{pr.id}?tab=dependencies">{pr.path}</a></li>{/each}</ul>
-                      </details>
-                    {/each}
+                    <ul class="versions">
+                      {#each p.versions as v (v.version)}
+                        <li>
+                          <span class="pill ver" class:vuln={v.open_vulns > 0}>{v.version}</span>
+                          {#if v.open_vulns > 0}<span class="tag sev-error">{t('drift.vulns', { n: v.open_vulns })}</span>
+                          {:else if v.version === p.latest_version}<span class="tag ok" title={t('drift.latest')}>{t('drift.latestTag')}</span>{/if}
+                          <span class="where">
+                            {#each v.projects as pr, i (pr.id)}{#if i}, {/if}<a href="#/projects/{pr.id}?tab=dependencies" title={pr.path}>{pr.path.split('/').filter(Boolean).pop() ?? pr.path}</a>{/each}
+                          </span>
+                        </li>
+                      {/each}
+                    </ul>
                   </td>
-                  <td class="num" class:sev-error={p.spread >= 2} class:sev-warning={p.spread === 1}>{p.spread}</td>
+                  <td class="num">
+                    <span class="pill spread" class:sev-error={p.spread >= 2} class:sev-warning={p.spread === 1}>
+                      {p.spread ? t('drift.majors', { n: p.spread }) : t('drift.sameMajor')}
+                    </span>
+                  </td>
                 </tr>
               {/each}
             </tbody>
@@ -49,11 +57,21 @@
 </section>
 
 <style>
-  .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .check { display: inline-flex; align-items: center; gap: 6px; }
+  .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+  .head h2 { margin-bottom: 4px; }
+  .hint { margin: 0; font-size: 12px; }
+  .check { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; color: var(--text); margin-top: 2px; cursor: pointer; }
   td { vertical-align: top; }
-  summary { cursor: pointer; }
-  ul { margin: 4px 0 6px 16px; padding: 0; }
+  .name { font-weight: 600; }
+  .sub { font-size: 12px; }
+  .versions { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .versions li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+  .ver { font-family: var(--mono); font-size: 12px; color: var(--text); }
   .pill.vuln { background: color-mix(in srgb, var(--err) 15%, transparent); color: var(--err); font-weight: 600; }
-  .pill.latest { opacity: 0.7; }
+  .tag { font-size: 11px; font-weight: 600; }
+  .tag.ok { color: var(--muted); }
+  .where { font-size: 12px; }
+  .spread { white-space: nowrap; font-size: 12px; }
+  .spread.sev-error { background: color-mix(in srgb, var(--err) 15%, transparent); color: var(--err); }
+  .spread.sev-warning { background: color-mix(in srgb, var(--warn) 15%, transparent); color: var(--warn); }
 </style>

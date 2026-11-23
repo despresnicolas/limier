@@ -16,21 +16,30 @@
   const res = resource(() => (q ? api.searchPackages(q) : Promise.resolve(empty)));
   const invalid = $derived(res.error instanceof ApiError && res.error.status === 400);
 
+  const EXAMPLES = ['axios', 'axios@1.6.0', 'axios@<1.7.0'];
+
   let timer: ReturnType<typeof setTimeout>;
+  const search = (v: string) => goto(`#/packages${v.trim() ? `?q=${encodeURIComponent(v.trim())}` : ''}`, { keepFocus: true, noScroll: true, replaceState: true });
   function onInput(v: string) {
     clearTimeout(timer);
-    timer = setTimeout(() => goto(`#/packages${v.trim() ? `?q=${encodeURIComponent(v.trim())}` : ''}`, { keepFocus: true, noScroll: true, replaceState: true }), 300);
+    timer = setTimeout(() => search(v), 300);
   }
 </script>
 
 <h1>{t('nav.packages')}</h1>
 <p class="muted intro">{t('packages.intro')}</p>
 
-<label class="card search">
-  {t('packages.search')}
-  <input type="search" value={q} oninput={(e) => onInput(e.currentTarget.value)} placeholder={t('packages.searchPh')} spellcheck="false" autocomplete="off" />
-  <span class="muted hint">{t('packages.searchHint')}</span>
-</label>
+<div class="search">
+  <div class="field">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" /><path d="m11 11 3.5 3.5" /></svg>
+    <input type="search" value={q} oninput={(e) => onInput(e.currentTarget.value)} aria-label={t('packages.search')} placeholder={t('packages.searchPh')} spellcheck="false" autocomplete="off" />
+  </div>
+  <p class="examples">
+    <span class="muted">{t('packages.examples')}</span>
+    {#each EXAMPLES as ex (ex)}<button type="button" class="ex" onclick={() => { clearTimeout(timer); search(ex); }}><code>{ex}</code></button>{/each}
+  </p>
+  <p class="muted hint">{t('packages.searchHint')}</p>
+</div>
 
 {#if !q}
   <VersionDrift />
@@ -90,7 +99,13 @@
 
 <style>
   .intro { margin: -8px 0 16px; font-size: 13px; }
-  .search { display: grid; gap: 6px; margin-bottom: 16px; }
-  .search input { font-family: var(--mono); }
+  .search { display: grid; gap: 8px; margin-bottom: 28px; }
+  .field { position: relative; }
+  .field svg { position: absolute; left: 12px; top: 50%; translate: 0 -50%; width: 16px; height: 16px; fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; pointer-events: none; }
+  .field input { font-family: var(--mono); font-size: 15px; padding: 10px 12px 10px 36px; border-radius: var(--radius); }
+  .examples { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; font-size: 12px; }
+  .ex { padding: 1px 8px; border-radius: 99px; font-size: 12px; background: var(--surface-2); border-color: transparent; }
+  .ex:hover { border-color: var(--accent); }
+  .hint { margin: 0; }
   .hint, .sub, .count { font-size: 12px; }
 </style>

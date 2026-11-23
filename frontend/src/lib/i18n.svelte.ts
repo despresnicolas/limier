@@ -14,7 +14,8 @@ const fr = {
 
   'packages.intro': 'Une faille tombe sur un paquet ? Donnez son nom, le limier flaire tous vos projets.',
   'packages.search': 'Paquet recherché',
-  'packages.searchPh': 'axios, axios@1.6.0, axios@<1.7.0…',
+  'packages.searchPh': 'Nom du paquet…',
+  'packages.examples': 'Exemples',
   'packages.searchHint': 'Un nom seul cherche une partie du nom. Ajoutez @version ou @plage semver (^1.6, <1.7.0) pour viser des versions précises.',
   'packages.invalid': 'Le limier ne comprend pas cette piste. Essayez « nom », « nom@1.2.3 » ou « nom@<2.0.0 ».',
   'packages.none': 'Aucune trace de « {q} » dans la dernière analyse de vos projets. Fausse piste, ou bonne nouvelle !',
@@ -287,6 +288,10 @@ const fr = {
   'drift.package': 'Paquet',
   'drift.versions': 'Versions',
   'drift.projects': 'Projets',
+  'drift.projectCount': '{n} projet|{n} projets',
+  'drift.majors': '{n} majeure|{n} majeures',
+  'drift.sameMajor': 'même majeure',
+  'drift.latestTag': 'à jour',
   'drift.spread': 'Écart',
   'drift.spreadHelp': 'Nombre de versions majeures entre la plus ancienne et la plus récente.',
   'drift.latest': 'Dernière version publiée',
@@ -574,8 +579,8 @@ const fr = {
   'settings.editorHint': 'Un clic sur fichier:ligne dans un problème de code ouvre le fichier à la bonne ligne, dans cet éditeur. Un projet peut utiliser un autre éditeur : onglet Réglages du projet.',
   'editor.open': 'Ouvrir dans l’éditeur',
   'editor.pickTitle': 'Quel éditeur pour l’enquête ?',
-  'editor.pickWhy': 'Quand le détective repère un problème dans le code, il a besoin d’un éditeur par défaut pour ouvrir la ligne concernée. Choisissez le vôtre.',
-  'editor.pickHint': 'Vous pouvez le changer dans Réglages. Un projet peut aussi avoir son propre éditeur, dans l’onglet Réglages du projet.',
+  'editor.pickWhy': 'Quand le détective repère un problème dans le code, il a besoin d’un éditeur pour ouvrir la ligne concernée. Choisissez le vôtre.',
+  'editor.pickHint': 'L’éditeur par défaut peut être changé dans Réglages. Chaque projet peut avoir son propre éditeur, dans l’onglet Réglages du projet.',
   'editor.later': 'Plus tard',
   'update.title': 'Mises à jour',
   'update.current': 'Version installée : {v}',
@@ -675,7 +680,8 @@ const en: Record<Key, string> = {
 
   'packages.intro': 'A flaw hits a package? Give its name, and the bloodhound sniffs through all your projects.',
   'packages.search': 'Package to find',
-  'packages.searchPh': 'axios, axios@1.6.0, axios@<1.7.0…',
+  'packages.searchPh': 'Package name…',
+  'packages.examples': 'Examples',
   'packages.searchHint': 'A name alone matches part of the name. Add @version or a @semver range (^1.6, <1.7.0) to target exact versions.',
   'packages.invalid': 'The bloodhound cannot follow this trail. Try "name", "name@1.2.3" or "name@<2.0.0".',
   'packages.none': 'No trace of "{q}" in the last scan of your projects. A false trail, or good news!',
@@ -948,6 +954,10 @@ const en: Record<Key, string> = {
   'drift.package': 'Package',
   'drift.versions': 'Versions',
   'drift.projects': 'Projects',
+  'drift.projectCount': '{n} project|{n} projects',
+  'drift.majors': '{n} major|{n} majors',
+  'drift.sameMajor': 'same major',
+  'drift.latestTag': 'latest',
   'drift.spread': 'Spread',
   'drift.spreadHelp': 'Number of major versions between the oldest and the newest.',
   'drift.latest': 'Latest published version',
@@ -1235,8 +1245,8 @@ const en: Record<Key, string> = {
   'settings.editorHint': 'A click on file:line in a code issue opens the file at that line, in this editor. A project can use another editor: Settings tab of the project.',
   'editor.open': 'Open in editor',
   'editor.pickTitle': 'Which editor for the investigation?',
-  'editor.pickWhy': 'When the detective spots an issue in the code, it needs a default editor to open the line in question. Pick yours.',
-  'editor.pickHint': 'You can change it in Settings. A project can also have its own editor, in the Settings tab of the project.',
+  'editor.pickWhy': 'When the detective spots an issue in the code, it needs an editor to open the line in question. Pick yours.',
+  'editor.pickHint': 'The default editor can be changed in Settings. Each project can have its own editor, in the project’s Settings tab.',
   'editor.later': 'Later',
   'update.title': 'Updates',
   'update.current': 'Installed version: {v}',
@@ -1338,7 +1348,9 @@ export function store(key: string, value: string | null) {
   }
 }
 
-export const i18n = $state({ lang: (stored('lang') === 'en' ? 'en' : 'fr') as Lang });
+// No saved choice: follow the system language (French for any fr-*, English otherwise).
+const initialLang: Lang = (stored('lang') ?? globalThis.navigator?.language ?? 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en';
+export const i18n = $state({ lang: initialLang });
 
 /** Title of a code rule such as "secret.github-token", or the raw id when unknown. */
 export function ruleTitle(id: string): string {

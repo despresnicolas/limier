@@ -68,6 +68,7 @@ input, select, textarea {
   padding: 6px 8px;
 }
 textarea { font-family: var(--mono); font-size: 12.5px; }
+input:is([type=checkbox], [type=radio]) { width: auto; margin: 0; accent-color: var(--accent); }
 /* WebKit ignores the box styles of a native select: draw it like an input, with a theme-colored chevron. */
 select {
   appearance: none;

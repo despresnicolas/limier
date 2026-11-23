@@ -20,6 +20,7 @@
     { href: '/projects', label: 'nav.projects', sub: 'nav.projectsSub', key: '2', kbd: '⌘2', icon: 'folder' },
     { href: '/findings', label: 'nav.findings', sub: 'nav.findingsSub', key: '3', kbd: '⌘3', icon: 'shield' },
     { href: '/packages', label: 'nav.packages', sub: 'nav.packagesSub', key: '4', kbd: '⌘4', icon: 'package' },
+    { href: '/guide', label: 'nav.guide', sub: 'nav.guideSub', key: '5', kbd: '⌘5', icon: 'help' },
     { href: '/settings', label: 'nav.settings', sub: 'nav.settingsSub', key: ',', kbd: '⌘,', icon: 'settings' },
   ];
   const active = (href: string) => (href === '/' ? route().pathname === '/' : route().pathname.startsWith(href));
